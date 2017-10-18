@@ -90,6 +90,10 @@ public class FaceActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
     }
 
+    public void takePicture(View view) {
+        CameraInterface.getInstance().doTakePicture();
+    }
+
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
     }

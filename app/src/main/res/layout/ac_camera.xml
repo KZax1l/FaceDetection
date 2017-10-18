@@ -1,17 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <SurfaceView
-        android:id="@+id/sv_face"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
 
-    <com.nova.face.FaceView
-        android:id="@+id/iv_face"
+        <SurfaceView
+            android:id="@+id/sv_face"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.nova.face.FaceView
+            android:id="@+id/iv_face"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
+
+    <Button
+        android:id="@+id/btn_take_pic"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-</FrameLayout>
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:onClick="takePicture"
+        android:text="拍照" />
+</RelativeLayout>

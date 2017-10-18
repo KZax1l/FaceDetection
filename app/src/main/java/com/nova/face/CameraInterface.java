@@ -3,13 +3,19 @@ package com.nova.face;
 import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -42,9 +48,9 @@ public class CameraInterface {
             return true;// 有权限
         // 判断是不是在Android6.0以上需要进行手动设置权限
         if (ActivityCompat.shouldShowRequestPermissionRationale(activity, Manifest.permission.CAMERA)) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, 1);
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         } else {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA}, 1);
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
         return false;// 没有权限，进行请求
     }
@@ -140,6 +146,84 @@ public class CameraInterface {
             mPreviwRate = -1f;
             mCamera.release();
             mCamera = null;
+        }
+    }
+
+    /**
+     * 拍照
+     */
+    public void doTakePicture() {
+        if (isPreviewing && (mCamera != null)) {
+            mCamera.takePicture(mShutterCallback, null, mJpegPictureCallback);
+        }
+    }
+
+    /*为了实现拍照的快门声音及拍照保存照片需要下面三个回调变量*/
+    Camera.ShutterCallback mShutterCallback = new Camera.ShutterCallback()
+            //快门按下的回调，在这里我们可以设置类似播放“咔嚓”声之类的操作。默认的就是咔嚓。
+    {
+        public void onShutter() {
+            // TODO Auto-generated method stub
+            Log.i(TAG, "myShutterCallback:onShutter...");
+        }
+    };
+    Camera.PictureCallback mRawCallback = new Camera.PictureCallback()
+            // 拍摄的未压缩原数据的回调,可以为null
+    {
+
+        public void onPictureTaken(byte[] data, Camera camera) {
+            // TODO Auto-generated method stub
+            Log.i(TAG, "myRawCallback:onPictureTaken...");
+
+        }
+    };
+    Camera.PictureCallback mJpegPictureCallback = new Camera.PictureCallback()
+            //对jpeg图像数据的回调,最重要的一个回调
+    {
+        public void onPictureTaken(byte[] data, Camera camera) {
+            // TODO Auto-generated method stub
+            Log.i(TAG, "myJpegCallback:onPictureTaken...");
+            Bitmap bitmap = null;
+            if (null != data) {
+                bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);//data是字节数据，将其解析成位图
+                mCamera.stopPreview();
+                isPreviewing = false;
+            }
+            //保存图片到sdcard
+//            if (null != bitmap) {
+//                //设置FOCUS_MODE_CONTINUOUS_VIDEO)之后，myParam.set("rotation", 90)失效。
+//                //图片竟然不能旋转了，故这里要旋转下
+//                Bitmap rotaBitmap = ImageUtil.getRotateBitmap(bitmap, 90.0f);
+//            }
+            saveBitmap(bitmap);
+            //再次进入预览
+            mCamera.startPreview();
+            isPreviewing = true;
+        }
+    };
+
+    /**
+     * 保存Bitmap到sdcard
+     */
+    private void saveBitmap(Bitmap bitmap) {
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/FaceDetection";
+        File f = new File(path);
+        if (!f.exists() && !f.mkdir()) return;
+
+        long dataTake = System.currentTimeMillis();
+        String jpegName = path + "/" + dataTake + ".jpg";
+        Log.i(TAG, "saveBitmap:jpegName = " + jpegName);
+        try {
+            FileOutputStream fout = new FileOutputStream(jpegName);
+            BufferedOutputStream bos = new BufferedOutputStream(fout);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            bos.flush();
+            bos.close();
+            Log.i(TAG, "saveBitmap成功");
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            Log.i(TAG, "saveBitmap:失败");
+            e.printStackTrace();
         }
     }
 }  
