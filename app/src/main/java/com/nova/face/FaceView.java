@@ -2,7 +2,9 @@ package com.nova.face;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera.CameraInfo;
@@ -16,9 +18,24 @@ public class FaceView extends android.support.v7.widget.AppCompatImageView {
     private RectF mRect = new RectF();
     private Drawable mFaceIndicator = null;
 
+    private Paint mPaint;
+
+    private float[] mMouth = new float[2];
+    private float[] mLeftEye = new float[2];
+    private float[] mRightEye = new float[2];
+
     public FaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mFaceIndicator = ContextCompat.getDrawable(context, R.mipmap.ic_face);
+
+        initPaint();
+    }
+
+    private void initPaint() {
+        mPaint = new Paint();
+        mPaint.setColor(Color.RED);
+        mPaint.setStrokeWidth(3);
+        mPaint.setStyle(Paint.Style.STROKE);
     }
 
     public void setFaces(Face[] faces) {
@@ -56,6 +73,25 @@ public class FaceView extends android.support.v7.widget.AppCompatImageView {
             mFaceIndicator.setBounds(Math.round(mRect.left), Math.round(mRect.top),
                     Math.round(mRect.right), Math.round(mRect.bottom));
             mFaceIndicator.draw(canvas);
+
+            mMouth[0] = mFace.mouth.x;
+            mMouth[1] = mFace.mouth.y;
+            mLeftEye[0] = mFace.leftEye.x;
+            mLeftEye[1] = mFace.leftEye.y;
+            mRightEye[0] = mFace.rightEye.x;
+            mRightEye[1] = mFace.rightEye.y;
+            mMatrix.mapPoints(mMouth);
+            mMatrix.mapPoints(mLeftEye);
+            mMatrix.mapPoints(mRightEye);
+
+            canvas.drawCircle(mMouth[0], mMouth[1], 50f, mPaint);
+            canvas.drawCircle(mLeftEye[0], mLeftEye[1], 50f, mPaint);
+            canvas.drawCircle(mRightEye[0], mRightEye[1], 50f, mPaint);
+
+            System.out.println("leftEye:[" + mFace.leftEye.x + "," + mFace.leftEye.y + "],"
+                    + "rightEye:[" + mFace.rightEye.x + "," + mFace.rightEye.y + "],"
+                    + "mouth:[" + mFace.mouth.x + "," + mFace.mouth.y + "],"
+                    + "rect:[" + mFace.rect.left + "," + mFace.rect.top + "," + mFace.rect.right + "," + mFace.rect.bottom + "].");
         }
         canvas.restore();
         super.onDraw(canvas);
