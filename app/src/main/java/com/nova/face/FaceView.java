@@ -16,15 +16,9 @@ public class FaceView extends android.support.v7.widget.AppCompatImageView {
     private RectF mRect = new RectF();
     private Drawable mFaceIndicator = null;
 
-    /**
-     * 高宽比例
-     */
-    private float scale;
-
     public FaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mFaceIndicator = ContextCompat.getDrawable(context, R.mipmap.ic_face);
-        scale = (float) mFaceIndicator.getIntrinsicHeight() / (float) mFaceIndicator.getIntrinsicWidth();
     }
 
     public void setFaces(Face[] faces) {
@@ -59,9 +53,8 @@ public class FaceView extends android.support.v7.widget.AppCompatImageView {
         for (Face mFace : mFaces) {
             mRect.set(mFace.rect);
             mMatrix.mapRect(mRect);
-            float bottom = (mRect.right - mRect.left) * scale + mRect.top;
             mFaceIndicator.setBounds(Math.round(mRect.left), Math.round(mRect.top),
-                    Math.round(mRect.right), Math.round(bottom));
+                    Math.round(mRect.right), Math.round(mRect.bottom));
             mFaceIndicator.draw(canvas);
         }
         canvas.restore();
