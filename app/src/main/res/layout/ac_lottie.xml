@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.airbnb.lottie.LottieAnimationView xmlns:lottie="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/lav_head"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#000"
+        lottie:lottie_autoPlay="true"
+        lottie:lottie_cacheStrategy="weak"
+        lottie:lottie_fileName="fingerprint_gray.json"
+        lottie:lottie_loop="true" />
+
+    <com.airbnb.lottie.LottieAnimationView xmlns:lottie="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/lav_fingerprint"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#000"
+        lottie:lottie_autoPlay="true"
+        lottie:lottie_cacheStrategy="weak"
+        lottie:lottie_fileName="fingerprint_gray.json"
+        lottie:lottie_loop="true" />
+
+    <com.airbnb.lottie.LottieAnimationView xmlns:lottie="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#000"
+        lottie:lottie_autoPlay="true"
+        lottie:lottie_cacheStrategy="weak"
+        lottie:lottie_fileName="fingerprint_blue.json"
+        lottie:lottie_loop="true" />
+</LinearLayout>
