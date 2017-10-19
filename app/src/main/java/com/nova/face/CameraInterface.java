@@ -5,7 +5,8 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.PixelFormat;
+import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.os.Environment;
@@ -84,9 +85,6 @@ public class CameraInterface {
 
     /**
      * 开启预览
-     *
-     * @param holder
-     * @param previewRate
      */
     public void doStartPreview(SurfaceHolder holder, float previewRate) {
         Log.i(TAG, "doStartPreview...");
@@ -96,7 +94,7 @@ public class CameraInterface {
         }
         if (mCamera != null) {
             mParams = mCamera.getParameters();
-            mParams.setPictureFormat(PixelFormat.JPEG);//设置拍照后存储的图片格式  
+            mParams.setPictureFormat(ImageFormat.JPEG);//设置拍照后存储的图片格式
             CameraParaUtil.getInstance().printSupportPictureSize(mParams);
             CameraParaUtil.getInstance().printSupportPreviewSize(mParams);
             //设置PreviewSize和PictureSize  
@@ -158,28 +156,32 @@ public class CameraInterface {
         }
     }
 
-    /*为了实现拍照的快门声音及拍照保存照片需要下面三个回调变量*/
-    Camera.ShutterCallback mShutterCallback = new Camera.ShutterCallback()
-            //快门按下的回调，在这里我们可以设置类似播放“咔嚓”声之类的操作。默认的就是咔嚓。
-    {
+    /* 为了实现拍照的快门声音及拍照保存照片需要下面三个回调变量 */
+    /**
+     * 快门按下的回调，在这里我们可以设置类似播放“咔嚓”声之类的操作。默认的就是咔嚓。
+     */
+    Camera.ShutterCallback mShutterCallback = new Camera.ShutterCallback() {
         public void onShutter() {
             // TODO Auto-generated method stub
             Log.i(TAG, "myShutterCallback:onShutter...");
         }
     };
-    Camera.PictureCallback mRawCallback = new Camera.PictureCallback()
-            // 拍摄的未压缩原数据的回调,可以为null
-    {
 
+    /**
+     * 拍摄的未压缩原数据的回调,可以为null
+     */
+    Camera.PictureCallback mRawCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
             // TODO Auto-generated method stub
             Log.i(TAG, "myRawCallback:onPictureTaken...");
 
         }
     };
-    Camera.PictureCallback mJpegPictureCallback = new Camera.PictureCallback()
-            //对jpeg图像数据的回调,最重要的一个回调
-    {
+
+    /**
+     * 对jpeg图像数据的回调,最重要的一个回调
+     */
+    Camera.PictureCallback mJpegPictureCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] data, Camera camera) {
             // TODO Auto-generated method stub
             Log.i(TAG, "myJpegCallback:onPictureTaken...");
@@ -190,12 +192,16 @@ public class CameraInterface {
                 isPreviewing = false;
             }
             //保存图片到sdcard
-//            if (null != bitmap) {
-//                //设置FOCUS_MODE_CONTINUOUS_VIDEO)之后，myParam.set("rotation", 90)失效。
-//                //图片竟然不能旋转了，故这里要旋转下
-//                Bitmap rotaBitmap = ImageUtil.getRotateBitmap(bitmap, 90.0f);
-//            }
-            saveBitmap(bitmap);
+            if (bitmap != null) {
+                switch (cameraId) {
+                    case Camera.CameraInfo.CAMERA_FACING_BACK:
+                        saveBitmap(getRotateBitmap(bitmap, 90));
+                        break;
+                    case Camera.CameraInfo.CAMERA_FACING_FRONT:
+                        saveBitmap(getRotateBitmap(bitmap, 270));
+                        break;
+                }
+            }
             //再次进入预览
             mCamera.startPreview();
             isPreviewing = true;
@@ -205,25 +211,32 @@ public class CameraInterface {
     /**
      * 保存Bitmap到sdcard
      */
-    private void saveBitmap(Bitmap bitmap) {
+    private String saveBitmap(Bitmap bitmap) {
         String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/FaceDetection";
         File f = new File(path);
-        if (!f.exists() && !f.mkdir()) return;
+        if (!f.exists() && !f.mkdir()) return null;
 
         long dataTake = System.currentTimeMillis();
         String jpegName = path + "/" + dataTake + ".jpg";
-        Log.i(TAG, "saveBitmap:jpegName = " + jpegName);
         try {
-            FileOutputStream fout = new FileOutputStream(jpegName);
-            BufferedOutputStream bos = new BufferedOutputStream(fout);
+            FileOutputStream fos = new FileOutputStream(jpegName);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
             bos.flush();
             bos.close();
-            Log.i(TAG, "saveBitmap成功");
+            return jpegName;
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            Log.i(TAG, "saveBitmap:失败");
             e.printStackTrace();
+            return null;
         }
+    }
+
+    /**
+     * 旋转Bitmap
+     */
+    private Bitmap getRotateBitmap(Bitmap bitmap, float rotateDegree) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotateDegree);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
     }
 }  
